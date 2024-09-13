@@ -1,4 +1,4 @@
-# Task Project: React JS
+# Task Project: Asp.Net Core Web Api
 
 ## Overview
 
@@ -23,13 +23,11 @@ A simple Asp.net Core web api  application demonstrating basic CRUD (Create, Rea
 
 Before starting the project, make sure to setup the necessary dependencies:
 
-Your Server Name 
-
+Server Name
 
 
 ## Installation Project
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/MAsimHussain/TestProjectFrontEnd.git
-   cd TestProjectFrontEnd
+   https://github.com/MAsimHussain/TaskProjectBackend.git
