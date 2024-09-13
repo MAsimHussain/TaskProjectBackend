@@ -1,8 +1,6 @@
-﻿using DomainLayer.EntityModels;
-using Microsoft.AspNetCore.Http;
+﻿using ApplicationLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 using ServiceLayer.Services.Interface;
-using TaskProject.UI.Model;
 
 namespace OnionArchitecture.Controllers
 {
@@ -20,25 +18,14 @@ namespace OnionArchitecture.Controllers
 
         [HttpPost]
 
-        public async Task<IActionResult> AddEmployee([FromForm] EmployeeModel model)
+        public async Task<IActionResult> AddEmployee([FromForm] EmployeeDto employeeDto)
         {
-            if (model == null)
-            {
-                return BadRequest("Invalid data.");
+
+            var employee = await _employeeService.AddEmployeeAsync(employeeDto);
+            if (employee == null) {
+
+                return NotFound();
             }
-
-            string? imageFileName = await UploadProfileImageAsync(model.ProfileImageFile);
-
-            var employee = new Employee
-            {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
-                Phone = model.Phone,
-                ProfileImage = imageFileName
-            };
-
-            await _employeeService.AddEmployeeAsync(employee);
 
             return Ok("Employee created successfully.");
         }
@@ -52,25 +39,27 @@ namespace OnionArchitecture.Controllers
 
             if (employees is null)
             {
-
                 return NotFound();
-
-
             }
-
             return Ok(employees);
 
-
         }
-
-
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployee([FromRoute] int id)
         {
             var emplyee = await _employeeService.DeleteEmployeeAsync(id);
 
-            return Ok("Emplyee Delete SuccessFully!");
+            if (emplyee)
+            {
+
+                return Ok("Employee Delete Successfully!");
+
+
+            }
+            return NotFound();
+
+
 
 
         }
@@ -84,7 +73,7 @@ namespace OnionArchitecture.Controllers
             if (employee is null)
             {
 
-                return NotFound();
+                return NotFound("Employee Not Found");
 
 
             }
@@ -97,36 +86,9 @@ namespace OnionArchitecture.Controllers
 
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEmployee([FromRoute] int id, [FromForm] EmployeeModel model)
+        public async Task<IActionResult> UpdateEmployee([FromRoute] int id, [FromForm] EmployeeDto employee)
         {
-            if (model == null)
-            {
-                return BadRequest("Invalid data.");
-            }
-
-            var existingEmployee = await _employeeService.GetEmployeeByIdAsync(id);
-
-            if (existingEmployee == null)
-            {
-                return NotFound("Employee not found.");
-            }
-
-            string? imageFileName = existingEmployee.ProfileImage;
-
-            if (model.ProfileImageFile != null)
-            {
-                imageFileName = await UploadProfileImageAsync(model.ProfileImageFile);
-            }
-
-            var employee = new Employee
-            {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
-                Phone = model.Phone,
-                ProfileImage = imageFileName
-            };
-
+            
             var updateEmployee = await _employeeService.UpdateEmployeeAsync(id, employee);
 
             if (updateEmployee == null)
@@ -134,7 +96,7 @@ namespace OnionArchitecture.Controllers
                 return NotFound("Failed to update employee.");
             }
 
-            return Ok(updateEmployee);
+            return Ok("Employee Update Successfully!");
 
 
         }
@@ -142,31 +104,6 @@ namespace OnionArchitecture.Controllers
 
 
 
-        private async Task<string?> UploadProfileImageAsync(IFormFile profileImageFile)
-        {
-            if (profileImageFile != null && profileImageFile.Length > 0)
-            {
-                string uploadFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images");
-
-                if (!Directory.Exists(uploadFolderPath))
-                {
-                    Directory.CreateDirectory(uploadFolderPath);
-                }
-
-                string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImageFile.FileName);
-
-                string logoFilePath = Path.Combine(uploadFolderPath, uniqueFileName);
-
-                using (var fileStream = new FileStream(logoFilePath, FileMode.Create))
-                {
-                    await profileImageFile.CopyToAsync(fileStream);
-                }
-
-                return uniqueFileName;
-            }
-
-            return null;
-        }
 
     }
 }
