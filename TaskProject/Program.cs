@@ -1,3 +1,4 @@
+using ApplicationLayer.Repository.Implementation;
 using Microsoft.EntityFrameworkCore;
 using RepositoryLayer.Data;
 using ServiceLayer.Service.Implementation;
@@ -16,6 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddTransient<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddCors(option =>
 {
