@@ -1,25 +1,25 @@
-﻿
-using ServiceLayer.Services.Interface;
+﻿using ApplicationLayer.Models;
 using DomainLayer.EntityModels;
-using RepositoryLayer.Data;
-using Microsoft.EntityFrameworkCore;
-using ApplicationLayer.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using RepositoryLayer.Data;
+using ServiceLayer.Services.Interface;
 
 namespace ServiceLayer.Service.Implementation
 {
     public class EmployeeService : IEmployeeService
     {
         private readonly ApplicatonDbContext _DbContext;
-        public EmployeeService(ApplicatonDbContext dbContext)
+        private readonly IFileService _FileService;  
+        public EmployeeService(ApplicatonDbContext dbContext, IFileService fileService)
         {
-
+            _FileService = fileService; 
             _DbContext = dbContext;
         }
         public async Task<EmployeeDto> AddEmployeeAsync(EmployeeDto employeeDto)
         {
-           
-            string? imageFileName = await UploadProfileImageAsync(employeeDto.ProfileImageFile);
+
+            string? imageFileName = await _FileService.UploadFileAsync(employeeDto.ProfileImageFile);
 
             var employee = new Employee
             {
@@ -40,12 +40,12 @@ namespace ServiceLayer.Service.Implementation
 
         public async Task<bool> DeleteEmployeeAsync(int id)
         {
-            var user = _DbContext.tblEmployees.FirstOrDefault(x => x.Id == id);
+            var employee = _DbContext.tblEmployees.FirstOrDefault(x => x.Id == id);
 
-            if (user != null)
+            if (employee != null)
             {
-
-                _DbContext.tblEmployees.Remove(user);
+                await _FileService.DeleteFileAsync(employee.ProfileImage);
+                _DbContext.tblEmployees.Remove(employee);
                 await _DbContext.SaveChangesAsync();
                 return true;
             }
@@ -95,10 +95,14 @@ namespace ServiceLayer.Service.Implementation
            
             string? imageFileName = empExist.ProfileImage;
 
-            if (employeeDto.ProfileImageFile != null)
-            {
-                imageFileName = await UploadProfileImageAsync(employeeDto.ProfileImageFile);
+            if (employeeDto.ProfileImageFile != null) { 
+
+                await _FileService.DeleteFileAsync(imageFileName);
+
+               var Image  = await _FileService.UploadFileAsync(employeeDto.ProfileImageFile);
+                imageFileName = Image;
             }
+
             if (empExist != null)
             {
                 empExist.FirstName = employeeDto.FirstName;

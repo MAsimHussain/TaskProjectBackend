@@ -1,3 +1,4 @@
+using ApplicationLayer.Repository.Implementation;
 using Microsoft.EntityFrameworkCore;
 using RepositoryLayer.Data;
 using ServiceLayer.Service.Implementation;
@@ -18,6 +19,18 @@ builder.Services.AddLazyCache();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddTransient<IEmployeeService, EmployeeService>();
+
+builder.Services.AddCors(option =>
+{
+    option.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod();
+    });
+});
+
+
 
 var app = builder.Build();
 
