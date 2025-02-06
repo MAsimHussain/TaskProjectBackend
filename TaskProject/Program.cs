@@ -2,30 +2,22 @@ using Microsoft.EntityFrameworkCore;
 using RepositoryLayer.Data;
 using ServiceLayer.Service.Implementation;
 using ServiceLayer.Services.Interface;
+using TaskProject.UI.DIServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.SqlConnection(builder.Configuration);
 
-builder.Services.AddDbContext<ApplicatonDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.RegisterDIServices(builder.Configuration);
 
+builder.Services.RegisterCorsPolicy(builder.Configuration);
+builder.Services.AddMemoryCache();  
+builder.Services.AddLazyCache();
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddTransient<IEmployeeService, EmployeeService>();
-
-builder.Services.AddCors(option =>
-{
-    option.AddDefaultPolicy(builder =>
-    {
-        builder.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod();
-    });
-});
-
-
 
 var app = builder.Build();
 
@@ -35,6 +27,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Serve Static files
 app.UseStaticFiles();   
 
 app.UseHttpsRedirection();

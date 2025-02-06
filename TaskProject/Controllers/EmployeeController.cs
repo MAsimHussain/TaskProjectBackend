@@ -1,5 +1,9 @@
-﻿using ApplicationLayer.Models;
+﻿using ApplicationLayer.CacheData;
+using ApplicationLayer.Models;
+using DomainLayer.EntityModels;
+using LazyCache;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using ServiceLayer.Services.Interface;
 
 namespace OnionArchitecture.Controllers
@@ -9,10 +13,12 @@ namespace OnionArchitecture.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
-        public EmployeeController(IEmployeeService employeeService)
+        private readonly ICacheProvider   _cacheProvider;
+        public EmployeeController(IEmployeeService employeeService, ICacheProvider cacheProvider)
         {
             _employeeService = employeeService;
 
+            _cacheProvider = cacheProvider;
         }
 
 
@@ -35,13 +41,23 @@ namespace OnionArchitecture.Controllers
         [Route("Employees")]
         public async Task<IActionResult> GetEmployees()
         {
-            var employees = await _employeeService.GetEmployeesAsync();
-
-            if (employees is null)
+			if (!_cacheProvider.TryGetValue(CacheKeys.Employee, out IEnumerable< EmployeeReadDto> employeesDto))
             {
-                return NotFound();
-            }
-            return Ok(employees);
+				employeesDto = await _employeeService.GetEmployeesAsync();
+
+            if (employeesDto is null)
+                return NotFound("Employee was not found");
+
+
+				var cacheEntryOpions = new MemoryCacheEntryOptions()
+				{
+					AbsoluteExpiration = DateTime.Now.AddSeconds(30),
+					SlidingExpiration = TimeSpan.FromSeconds(30),
+					Size = 200
+				};
+              _cacheProvider.Set(CacheKeys.Employee, employeesDto, cacheEntryOpions);    
+			}
+			return Ok(employeesDto);
 
         }
 
@@ -58,27 +74,30 @@ namespace OnionArchitecture.Controllers
 
             }
             return NotFound();
-
-
-
-
         }
 
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetEmployeeById([FromRoute] int id)
         {
-            var employee = await _employeeService.GetEmployeeByIdAsync(id);
-
-            if (employee is null)
+           
+            if(!_cacheProvider.TryGetValue(CacheKeys.Employee, out EmployeeReadDto employeeDto))
             {
+				employeeDto = await _employeeService.GetEmployeeByIdAsync(id);
+				if (employeeDto is null)
+				return NotFound($"Employee was not found with Id: {id}");
+				
+				var cacheEntryOpions = new MemoryCacheEntryOptions()
+                {
+                    AbsoluteExpiration = DateTime.Now.AddSeconds(30),
+                    SlidingExpiration = TimeSpan.FromSeconds(30),
+                    Size = 200
+                };
 
-                return NotFound("Employee Not Found");
-
-
+                _cacheProvider.Set(CacheKeys.Employee, employeeDto, cacheEntryOpions);  
             }
 
-            return Ok(employee);
+            return Ok(employeeDto);
 
 
         }
