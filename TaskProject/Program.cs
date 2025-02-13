@@ -1,8 +1,3 @@
-using ApplicationLayer.Repository.Implementation;
-using Microsoft.EntityFrameworkCore;
-using RepositoryLayer.Data;
-using ServiceLayer.Service.Implementation;
-using ServiceLayer.Services.Interface;
 using TaskProject.UI.DIServices;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +15,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddTransient<IEmployeeService, EmployeeService>();
 
 builder.Services.AddCors(option =>
 {

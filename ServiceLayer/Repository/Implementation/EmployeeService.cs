@@ -44,8 +44,9 @@ namespace ServiceLayer.Service.Implementation
 
             if (employee != null)
             {
-                await _FileService.DeleteFileAsync(employee.ProfileImage);
-                _DbContext.tblEmployees.Remove(employee);
+                if(employee.ProfileImage != null) await _FileService.DeleteFileAsync(employee.ProfileImage);
+
+				_DbContext.tblEmployees.Remove(employee);
                 await _DbContext.SaveChangesAsync();
                 return true;
             }

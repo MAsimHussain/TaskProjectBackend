@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ApplicationLayer.Repository.Implementation;
+using Microsoft.EntityFrameworkCore;
 using RepositoryLayer.Data;
 using ServiceLayer.Service.Implementation;
 using ServiceLayer.Services.Interface;
@@ -20,6 +21,7 @@ namespace TaskProject.UI.DIServices
 		{
 
 			service.AddTransient<IEmployeeService, EmployeeService>();
+			service.AddTransient<IFileService, FileService>();
 
 		}
 		
