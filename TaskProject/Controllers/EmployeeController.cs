@@ -1,6 +1,5 @@
 ﻿using ApplicationLayer.CacheData;
 using ApplicationLayer.Models;
-using DomainLayer.EntityModels;
 using LazyCache;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
